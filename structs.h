@@ -3,14 +3,13 @@
 
 typedef struct 
 {
-    int id;
     int age;
     int height_ft;
     int height_inch;
     float weight;
     float bmi;
     float bmr;
-    char gender[10]; //Will do a strcmp with string input and set to 0 if male or 1 if female
+    char gender[10]; 
     char username[100];
 }user;
 
@@ -18,7 +17,7 @@ typedef struct
 
 typedef struct 
 {
-    int id;
+    char username[100];
     int calrecord;
     int day;
     int month;
@@ -29,7 +28,7 @@ typedef struct
 
 typedef struct
 {
-    int id;
+    char username[100];
     int cal;
     char name[100];
     int day;
