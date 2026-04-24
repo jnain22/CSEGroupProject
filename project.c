@@ -4,6 +4,18 @@
 #include <string.h>
 #include "structs.h"
 
+
+
+//Function for clearing input buffer in case of misinput or mixed input
+void clearbuffer(void)
+{
+    char ch; 
+    while((ch = getchar()) != '\n');
+}
+
+
+
+
 //Function for getting the current date
 void getdate(int *day, int *month, int *year)
 {
@@ -44,6 +56,7 @@ float bmi(float weight, int height_ft, int height_inch)
     float height = conversion(height_ft, height_inch, 1); //1 means feet and inch to meter
     float result = weight / (height * height);
 
+    if (result < 1) {return -1;}
     return result;
 }
 
@@ -61,9 +74,8 @@ float bmr(float weight, int height_ft, int height_inch, int age, int gender)
     {
         case 0: result = (10 * weight) + (6.25 * height) - (5 * age) + 5; break;
         case 1: result = (10 * weight) + (6.25 * height) - (5 * age) - 161; break;
-
-        default: return -1; break;
     }
+
     return result;
 }
 
@@ -79,20 +91,18 @@ int user_record(char *name, char *gender, int height_ft, int height_inch, int ag
     new.weight = weight; new.age = age;
     new.bmi = bmi(weight, height_ft, height_inch);
     strcpy(new.username, name); strcpy(new.gender, gender);
-    if (strcmp(new.gender, "male"))
+    if (strcasecmp(new.gender, "male") == 0)
     {
 
         new.bmr = bmr(weight, height_ft, height_inch, age, 0);
     }
-    else 
+    else if (strcasecmp(new.gender, "female") == 0)
     {
         new.bmr = bmr(weight, height_ft, height_inch, age, 1);
     }
-
-    if (new.bmi == -1 || new.bmr == -1)
-    {
-        printf("\nERROR: BMI/BMR CALCULATION ERROR!\n");
-        return -1; //A return of -1 means an error occurred
+    else {
+        printf("\nInvalid gender input\n");
+        return -1; //a return of -1 means error occurred
     }
 
     //Saving the user profile in users.dat file
@@ -122,7 +132,7 @@ int show_profile(char *name)
     {
         if (strcmp(profile.username, name) == 0)
         {
-            printf("Name: %s\nAge: %d\tHeight: %dft %din\nWeight: %.2f\nBMI: %.2f\tBMR: %.2f\n",profile.username, profile.age, profile.height_ft, profile.height_inch, profile.weight, profile.bmi, profile.bmr);
+            printf("\nName: %s\nGender: %s\nAge: %d\tHeight: %dft %din\nWeight: %.2f\nBMI: %.2f\tBMR: %.2f\n",profile.username, profile.gender, profile.age, profile.height_ft, profile.height_inch, profile.weight, profile.bmi, profile.bmr);
         }
     }
     fclose(fp);
@@ -140,8 +150,8 @@ void makeprofile()
     int age; float weight; int ft, in;
     printf("Input name: "); fgets(name, sizeof(name), stdin);
     printf("Gender: "); fgets(gender, sizeof(gender), stdin);
-    printf("Input age: "); scanf("%d",&age);
-    printf("Input weight (kg): "); scanf("%f",&weight);
+    printf("Input age: "); scanf("%d",&age); clearbuffer();
+    printf("Input weight (kg): "); scanf("%f",&weight); clearbuffer();
     printf("Input height (ft and inches): "); scanf("%d %d",&ft, &in);
 
     int val = user_record(name, gender, ft, in, age, weight);
@@ -154,6 +164,7 @@ void makeprofile()
     else 
     {
         printf("\nERROR: Could not create new profile\n");
+        return;
     }
 }
 
@@ -162,7 +173,7 @@ void makeprofile()
 
 
 //Function for recording food
-void record_food(int cals, char *username, char *food_name) //Will ask the user for id when recording food
+void record_food(int cals, char *username, char *food_name) //Will ask the user for username when recording food
 {
     int day, month, year;
     getdate(&day, &month, &year); 
@@ -184,7 +195,7 @@ void record_food(int cals, char *username, char *food_name) //Will ask the user 
 
 
 //Function for recording the total calories in a day
-void record_daily(int cals, char *username) //Will ask the user for id when recording food
+void record_daily(int cals, char *username) //Will ask the user for username when recording food
 {
     int day, month, year;
     getdate(&day, &month, &year); 
@@ -225,6 +236,8 @@ void record_daily(int cals, char *username) //Will ask the user for id when reco
 
 
 
+
+
 //Function for showing food history
 void foodhistory(char *username, int day, int month, int year)
 {
@@ -241,7 +254,7 @@ void foodhistory(char *username, int day, int month, int year)
     {
         if (strcmp(var.username, username) == 0 && var.day == day && var.month == month && var.year == year)
         {
-            printf("\n%s | %d | %d/%d/%d\n", var.name, var.cal, var.day, var.month, var.year);
+            printf("\n%s | Calories: %d | Date: %d/%d/%d\n", var.name, var.cal, var.day, var.month, var.year);
         }
     }
     fclose(fp);
@@ -268,7 +281,7 @@ void dayhistory(char *username, int month, int year)
     {
         if (strcmp(var.username, username) == 0 && var.month == month && var.year == year)
         {
-            printf("\n%d | %d/%d/%d\n", var.calrecord, var.day, var.month, var.year);
+            printf("\nCalories: %d | Date: %d/%d/%d\n", var.calrecord, var.day, var.month, var.year);
         }
     }
 
@@ -286,10 +299,10 @@ void main()
     FILE *fp = fopen("users.dat","r+b");
     if (fp == NULL)
     {
-        printf("No user profile found, do you want to create a new one? (Y for yes, N for no) ");
-        char response; scanf("%c",&response);
+        printf("No user profile found, do you want to create a new one? (Yes or No) ");
+        char response[4]; fgets(response, 4, stdin);
         getchar(); //Clearing the input buffer 
-        if (response == 'Y')
+        if (strcasecmp(response, "yes") == 0)
         {
             makeprofile();
         }
@@ -307,16 +320,16 @@ void main()
     {
             int response;
             printf("\nWhat would you like to do?\n");
-            printf("\n1. Add new food record\n2. Show recorded food history\n3. Show recorded daily calorie intake\n4. Add new user profile\n5. Show saved user profiles\n6. Delete saved calorie data\n7. Delete all user data\n8. Exit program\n\n >>>>>>>>>> ");
+            printf("\n1) Add new food record\n2) Show recorded food history\n3) Show recorded daily calorie intake\n4) Add new user profile\n5) Show saved user profiles\n6) Delete saved calorie data\n7) Delete all user data\n8) Exit program\n\n >>>>>>>>>> ");
             
             scanf("%d",&response);
-            getchar(); //Clearing the input buffer
+            clearbuffer(); //Clearing the input buffer
             switch(response)
             {
                 case 1: {
                     char foodname[100]; int calories; char username[100];
                     printf("Enter food name: "); fgets(foodname, sizeof(foodname), stdin);
-                    printf("Enter calories: "); scanf("%d",&calories); getchar();
+                    printf("Enter calories: "); scanf("%d",&calories); clearbuffer();
                     printf("Enter username: "); fgets(username, sizeof(username), stdin);
 
                     record_food(calories, username, foodname);
@@ -328,7 +341,7 @@ void main()
                     int day, month, year;
                     char username[100];
                     printf("Enter username: "); fgets(username, sizeof(username), stdin);
-                    printf("Enter date (dd/mm/yy): "); scanf("%d %d %d",&day, &month, &year);
+                    printf("Enter date (dd mm yyyy): "); scanf("%d %d %d",&day, &month, &year);
 
                     foodhistory(username, day, month, year);
                     break;
@@ -337,7 +350,7 @@ void main()
                 case 3: {
                     int day, month, year; char username[100];
                     printf("Enter username: "); fgets(username, sizeof(username), stdin);
-                    printf("Enter date (mm/yy): "); scanf("%d %d",&month, &year);
+                    printf("Enter date (mm yy): "); scanf("%d %d",&month, &year);
 
                     dayhistory(username, month, year);
                     break;
@@ -346,6 +359,10 @@ void main()
                 case 4: makeprofile(); break;
 
                 case 5: {
+                    FILE *fp = fopen("users.dat","r+b");
+                    if (fp == NULL)
+                    {printf("\nNo user data exists...\n"); break;}
+
                     char name[100];
                     printf("Input a profile name: "); fgets(name, sizeof(name), stdin);
                     show_profile(name); break;
