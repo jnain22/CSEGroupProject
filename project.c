@@ -240,7 +240,8 @@ void record_daily(int cals, char *username) //Will ask the user for username whe
         }
         fseek(fp, -1*(i+1)*(long)sizeof(daily), SEEK_END);
     }
-
+    
+    fclose(fp);
     strcpy(input.username, username); input.calrecord = cals; input.day = day; input.month = month; input.year = year;
     fp = fopen("daily_record.dat", "a+b");
     fwrite(&input, sizeof(daily), 1, fp);
