@@ -16,6 +16,21 @@ void clearbuffer(void)
 
 
 
+void mylower(char *string)
+{
+    for (int i = 0; string[i] != '\n'; i++)
+    {
+        if (string[i] >= 'A' && string[i] <= 'Z')
+        {
+            string[i] = string[i] + 32;
+        }
+    }
+    string[strlen(string)-1] = '\0'; //Removing the '\n' from the string
+}
+
+
+
+
 //Function for getting the current date
 void getdate(int *day, int *month, int *year)
 {
@@ -89,14 +104,14 @@ int user_record(char *name, char *gender, int height_ft, int height_inch, int ag
     user new;
     new.height_ft = height_ft; new.height_inch = height_inch;
     new.weight = weight; new.age = age;
-    new.bmi = bmi(weight, height_ft, height_inch);
+    new.bmi = bmi(weight, height_ft, height_inch); mylower(gender);
     strcpy(new.username, name); strcpy(new.gender, gender);
-    if (strcasecmp(new.gender, "male") == 0)
+    if (strcmp(new.gender, "male") == 0)
     {
 
         new.bmr = bmr(weight, height_ft, height_inch, age, 0);
     }
-    else if (strcasecmp(new.gender, "female") == 0)
+    else if (strcmp(new.gender, "female") == 0)
     {
         new.bmr = bmr(weight, height_ft, height_inch, age, 1);
     }
@@ -300,15 +315,18 @@ void main()
     if (fp == NULL)
     {
         printf("No user profile found, do you want to create a new one? (Yes or No) ");
-        char response[4]; fgets(response, 4, stdin);
-        getchar(); //Clearing the input buffer 
-        if (strcasecmp(response, "yes") == 0)
+        char response[5]; fgets(response, sizeof(response), stdin); mylower(response);
+        if (strcmp(response, "yes") == 0)
         {
             makeprofile();
         }
-        else 
+        else if (strcmp(response, "no") == 0)
         {
             exit(0);
+        }
+        else {
+        printf("\nInvalid Input (%s). Exiting program...", response);
+        exit(-1);
         }
 
         
